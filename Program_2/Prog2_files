@@ -1,0 +1,154 @@
+  #include <vector>
+  #include <ncurses.h>
+  #include <cstring>
+  #include <iostream>
+  using namespace std;
+
+  using Vec = vector<char>;
+  using Mat = vector<Vec>;
+
+
+  bool isValidPos(int i, int j)
+  {
+    return (i >= 0 && i < 30 && j >= 0 && j < 30);
+  }   
+
+
+  int NeighborCheck(int i, int j, Mat M){
+    int N = 0;
+        if(isValidPos(i+1, j-1)){
+          if (M[i+1][j-1] == 'X'){
+              N++;
+            }
+        } if (isValidPos(i+1, j)){
+            if (M[i+1][j] == 'X'){
+              N++;
+            }
+        } if (isValidPos(i+1, j+1)){
+            if (M[i+1][j+1] == 'X'){
+              N++;
+            }
+        } if (isValidPos(i, j-1)){
+            if (M[i][j-1] == 'X'){
+              N++;
+            }
+        } if (isValidPos(i, j+1)){
+            if (M[i][j+1] == 'X'){
+              N++;
+            }
+        } if (isValidPos(i-1, j-1)){
+            if (M[i-1][j-1] == 'X'){
+              N++;
+            }
+        } if (isValidPos(i-1, j)){
+            if (M[i-1][j] == 'X'){
+              N++;
+            }
+        } if (isValidPos(i-1, j+1)){
+            if (M[i-1][j+1] == 'X'){
+              N++;
+            }
+        }
+
+    return N;
+  }
+
+ 
+
+  Mat Neighbor(Mat M, Mat M2){
+
+  for (int i = 0; i < 30; i++){
+    for (int j = 0; j < 30; j++){
+      int n = 0;
+      if (M[i][j] == 'X'){
+        int n = NeighborCheck(i, j, M);
+        if (n < 2){
+          M2[i][j] = ' ';
+        } else if (n > 3){
+          M2[i][j] = ' ';
+        } else if (n == 2 || n == 3){
+          M2[i][j] = 'X';
+        }
+      } else if (M[i][j] == ' '){
+        int n = NeighborCheck(i, j, M);
+        if (n == 3){
+          M2[i][j] = 'X';
+        }
+      }
+    }
+  }
+      return M2;
+  }
+
+  void PrintMat(Mat M){
+  for (int i = 0; i < 30; i++){
+    cout << endl;
+    for (int j = 0;j < 30; j++){
+      cout << M[i][j];
+    }
+  }
+  }
+
+  Mat Click(Mat M){
+
+    MEVENT event;
+    
+    initscr ();
+    noecho();
+    cbreak();
+    keypad(stdscr, TRUE);
+    curs_set(0);
+    mouseinterval(3);
+    mousemask(ALL_MOUSE_EVENTS, NULL);
+    
+    while(1){	
+        int c = getch();
+      switch(c){	
+          case KEY_MOUSE:
+            if(getmouse(&event) == OK)
+              if(event.bstate & BUTTON1_PRESSED){  
+                mvprintw(event.y, event.x, "X");
+                M[event.y][event.x] = 'X';
+                refresh(); 
+              }
+          break;
+          case 'q' : goto end;
+      }
+    }		
+  end:
+    endwin ();
+    return M;
+  }
+
+  void GameSpace(){
+
+  Mat M(30, Vec(30, ' '));
+  Mat M2(30, Vec(30, ' '));
+  Mat temp(30, Vec(30, ' '));
+  Mat M3(30, Vec(30, ' '));
+
+  M = Click(M);
+  initscr ();
+  noecho();
+  cbreak();
+  keypad(stdscr, TRUE);
+  curs_set(0);
+  while(1){	 
+    int c = getch();
+      switch(c){
+          case 'n':
+
+          PrintMat(M);
+          M2 = Neighbor(M, M2);
+          temp = M2;
+          M2 = M;
+          M = temp;
+          M2 = M3;
+          break;
+
+          case 'e' : goto end;
+      }
+    }		
+  end:
+    endwin ();
+  }
